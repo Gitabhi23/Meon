@@ -1,0 +1,31 @@
+For Rekycadmin Portal
+
+@rekycadmin.route('/masterrekycadmin', methods=['GET', 'POST'])
+def masterrekycadministrative():
+    if request.method == 'GET':
+      return render_template('masterlogin_rekyc.html')
+
+    if request.method == 'POST':
+      email = request.form["username"]
+      password = request.form["password"]
+      print(password)
+      data=conn_capstocks_admin.execute('SELECT * FROM admin WHERE admin_name = "masterrekyc" ') .fetchall()
+      print("data-->",data)
+      if data[0][2] == '':
+        conn_capstocks_admin.execute("UPDATE admin SET email='"+email+"' password='"+password+"' where admin_name = masterrekyc")
+        conn_capstocks_admin.commit()
+        print("Inserted")
+      if data[0][2] == password and data[0][1] == email:
+        data=conn_capstocks_digilocker.execute('SELECT * FROM userdetails').fetchall()
+        data1=["requested","rejected","review_pending","esign_pending","esigned","complete"]
+        alldata=[]
+        for i in data1:
+            cursor=conn_capstocks_digilocker.cursor()
+            cursor.execute('SELECT count(*) from userdetails WHERE changes="'+i+'" ')
+            signupdata=cursor.fetchone()
+            # print(signupdata[0])
+            alldata.append(signupdata[0])
+        print(alldata)
+        return render_template('masterrekycadmin.html' ,data=data, count=alldata)
+      else:
+          return render_template('masterlogin_rekyc.html',error="Invalid Login/password")
